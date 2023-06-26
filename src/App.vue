@@ -2,7 +2,9 @@
 import { ref, reactive } from 'vue' 
 import Presupuesto from './components/Presupuesto.vue';
 import ControlPresupuesto from './components/ControlPresupuesto.vue';
+import Gasto from './components/Gasto.vue';
 import Modal from './components/Modal.vue'
+import { generarId } from './helpers/index'
 
 import iconoNuevoGasto from './assets/img/nuevo-gasto.svg'
 
@@ -20,6 +22,8 @@ const gasto = reactive({
   id: null,
   fecha: Date.now()
 })
+
+const gastos = ref([])
 
 const definirPresupuesto = (cantidad) =>{
   presupuesto.value= cantidad
@@ -41,7 +45,20 @@ const ocultarModal = ()=>{
 }
 
 const guardarGasto = ()=>{
-  console.log('Desde App.vue')
+  gastos.value.push({
+    ...gasto,
+    id:generarId()
+  })
+
+  ocultarModal()
+  //Reiniciar el objeto
+  Object.assign(gasto, {
+    nombre: '',
+    cantidad:'',
+    categoria:'',
+    id:null,
+    fecha: Date.now()
+  })
 }
 
 </script>
@@ -65,6 +82,18 @@ const guardarGasto = ()=>{
     </div>
   </header>
  <main v-if="presupuesto > 0">
+
+  <div class="listado-gastos contenedor">
+     <h1>{{ gastos.length > 0 ? 'Gastos' : 'No hay gastos' }}</h1>
+
+     <Gasto
+        v-for="gasto in gastos"
+        :key="gasto.id"
+        :gasto="gasto"
+     />
+  </div>
+
+
   <div class="crear-gasto">
       <img 
           :src="iconoNuevoGasto"
@@ -154,5 +183,13 @@ header h1 {
   cursor: pointer;
 }
 
+.listado-gastos{
+  margin-top: 10rem;
+}
+
+.listado-gastos h2{
+  font-weight: 900;
+  color: var(--gris-oscuro)
+}
 
 </style>
