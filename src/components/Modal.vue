@@ -1,5 +1,5 @@
 <script setup>
-   import { ref } from 'vue'
+   import { ref, computed } from 'vue'
    import Alerta from './Alerta.vue';
    import cerrarModal from '../assets/img/cerrar.svg'
 
@@ -26,12 +26,18 @@
        disponible:{
         type: Number,
         required: true
+       },
+       id:{
+        type: [String, null],
+        required:true
        }
    })
 
+
+   const old = props.cantidad
    const agregarGasto = ()=>{
      //validar que no haya campos vacios
-     const { cantidad, categoria, nombre, disponible } = props
+     const { cantidad, categoria, nombre, disponible, id } = props
      if([nombre,cantidad, categoria].includes('')){
         error.value = 'Todos los campos son obligarorios'
         setTimeout(() => {
@@ -51,18 +57,34 @@
          return
      }
      //validar que el usuario no gaste mas de lo disponible
-     if(cantidad > disponible){
+      if(id){
+        //Tomar encuenta el gasto ya realizado
+        if(cantidad > old + disponible){
+          error.value = 'Has excedido el presupuesto'
+        setTimeout(() => {
+            error.value =''
+        }, 3000);
+         return
+        }
+
+      }else{
+        if(cantidad > disponible)
+        {
         error.value = 'Has excedido el presupuesto'
         setTimeout(() => {
             error.value =''
         }, 3000);
          return
-     }
+        }
+      }
 
 
      emit('guardar-gasto')
    }
 
+   const isEditing = computed( ()=>{
+        return props.id
+   } )
 </script>
 <template>
    <div class="modal">
@@ -79,7 +101,7 @@
                 @submit.prevent="agregarGasto"
           
           >
-            <legend>Añadir Gasto</legend>
+            <legend>{{ isEditing ? 'Guardar cambios' : 'Añadir gasto' }}</legend>
 
             <Alerta v-if="error">
               {{ error }}
@@ -124,9 +146,15 @@
 
              <input 
                     type="submit"
-                    value="Añadir Gasto"
+                    :value="[isEditing ? 'Guardar cambio' : 'Añadir Gasto']"
              >
           </form>
+          <button
+                type="button"
+                class="btn-eliminar"
+          >
+             Eliminar gasto
+          </button>
       </div>
    </div>
 </template>
@@ -195,6 +223,16 @@
       background-color: var(--azul);
       color: var(--blanco);
       font-weight: 700;
+      cursor: pointer;
+   }
+   .btn-eliminar{
+      padding: 1rem;
+      width: 100%;
+      background-color: #ef4444;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--blanco);
+      margin-top: 10rem;
       cursor: pointer;
    }
 </style>
